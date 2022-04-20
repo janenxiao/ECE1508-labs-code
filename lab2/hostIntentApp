@@ -1,0 +1,155 @@
+#!/usr/bin/python3
+
+import sys
+import time
+import json
+import requests
+
+def removeOldRulesOnSw(swId):
+    response = requests.get('http://localhost:8181/onos/v1/flows/{}'.format(swId), auth=('onos','rocks'))
+    resjson = response.json()
+    for flow in resjson['flows']:
+        if flow['appId'] == 'org.onosproject.rest': # if rule installed by REST API, delete it
+            requests.delete('http://localhost:8181/onos/v1/flows/{}/{}'.format(swId, flow['id']), auth=('onos','rocks'))
+
+
+# Set flow rules on switches, return switches along the path, update ruleSwes if new path set
+def setFlowRules(hostlocs, ruleSwes, ruleJson):
+    srcSw = hostlocs[0]['elementId']
+    srcPort = hostlocs[0]['port']
+    dstSw = hostlocs[1]['elementId']
+    dstPort = hostlocs[1]['port']
+    # Obtain path btw host switches
+    response = requests.get('http://localhost:8181/onos/v1/paths/{}/{}'.format(srcSw, dstSw), auth=('onos','rocks'))
+    resjson = response.json()
+    if len(resjson['paths']) == 0:  # if no path
+        print('path error: no path between {} => {}'.format(srcSw, dstSw))
+        return None
+    # print(resjson)
+
+    pathlinks = resjson['paths'][0]['links']        # list of link dicts
+    numlinks = int(resjson['paths'][0]['cost'])     # number of links on the path
+    
+    pathSwes = dict()
+    prevPort = srcPort
+    for i in range(numlinks):
+        link = pathlinks[i]  # link <fromSw:fromPort, toSw:toPort>
+        fromSw = link['src']['device']
+        fromPort = link['src']['port']
+        if fromSw in ruleSwes:  # if we have set rules on fromSw before
+            removeOldRulesOnSw(fromSw)
+
+        # set rule on fromSw to forward prevPort => fromPort, prevPort is toPort of the previous link
+        ruleJson['deviceId'] = fromSw
+        ruleJson['selector']['criteria'][0]['port'] = prevPort
+        ruleJson['treatment']['instructions'][0]['port'] = fromPort
+        response = requests.post('http://localhost:8181/onos/v1/flows/{}'.format(fromSw), data=json.dumps(ruleJson), auth=('onos','rocks'))
+        # print(response.text)
+
+        # set rule on fromSw to forward fromPort => prevPort
+        ruleJson['selector']['criteria'][0]['port'] = fromPort
+        ruleJson['treatment']['instructions'][0]['port'] = prevPort
+        response = requests.post('http://localhost:8181/onos/v1/flows/{}'.format(fromSw), data=json.dumps(ruleJson), auth=('onos','rocks'))
+
+        pathSwes[fromSw] = (prevPort, fromPort)
+        ruleSwes.add(fromSw)
+
+        prevPort = link['dst']['port']  # prevPort = toPort
+
+        if i == numlinks -1:
+            # reached the last link
+            toSw = link['dst']['device']
+            toPort = link['dst']['port']
+            if toSw in ruleSwes:  # if we have set rules on toSw before
+                removeOldRulesOnSw(toSw)
+            # set rule on toSw to forward toPort => edgePort of dstHost
+            ruleJson['deviceId'] = toSw
+            ruleJson['selector']['criteria'][0]['port'] = toPort
+            ruleJson['treatment']['instructions'][0]['port'] = dstPort
+            response = requests.post('http://localhost:8181/onos/v1/flows/{}'.format(toSw), data=json.dumps(ruleJson), auth=('onos','rocks'))
+            # set rule on toSw to forward edgePort of dstHost => toPort
+            ruleJson['selector']['criteria'][0]['port'] = dstPort
+            ruleJson['treatment']['instructions'][0]['port'] = toPort
+            response = requests.post('http://localhost:8181/onos/v1/flows/{}'.format(toSw), data=json.dumps(ruleJson), auth=('onos','rocks'))
+
+            pathSwes[toSw] = (toPort, dstPort)
+            ruleSwes.add(toSw)
+    
+    return pathSwes
+
+
+def main():
+    assert len(sys.argv) == 3, 'Program takes exactly two arguments'
+    hosts = sys.argv[1:]
+    print("args: ", hosts)
+
+    hostlocs = list()   # a list of 2 dicts of format {'elementId': switchID <str>, 'port': portNum <str>}
+    
+    # Obtain host switches
+    for hostId in hosts:
+        response = requests.get('http://localhost:8181/onos/v1/hosts/{}'.format(hostId), auth=('onos','rocks'))
+        resjson = response.json()
+        if response.status_code != 200:
+            raise Exception('host error: {}: {}'.format(hostId, resjson['message']))
+        location = resjson['locations'][0]
+        hostlocs.append(location)
+    print(hostlocs)
+
+    ruleStr = '{"priority":40001,"timeout":0,"isPermanent":true,"deviceId":"of:0000000000000001","treatment":{"instructions":[{"type":"OUTPUT","port":"3"}]},"selector":{"criteria":[{"type":"IN_PORT","port":"2"}]}}'
+    ruleJson = json.loads(ruleStr)
+
+    ruleSwes = set()    # records switches that we've set rules on, updated in setFlowRules()
+    # pathSwes: records switches on current path, dict of format {switchID <str>: (inport <str>, outport <str>)}, rule set for both directions inport <=> output
+    pathSwes = setFlowRules(hostlocs, ruleSwes, ruleJson)
+    if pathSwes is None:
+        return
+    print("new path: {}".format(pathSwes))
+    # print(ruleSwes)
+
+    while True:
+        time.sleep(5)
+
+        # Check if all ports along the path still enabled
+        pathValid = True if pathSwes else False     # path is valid if there are switches recorded in pathSwes
+        for swId in pathSwes:
+            portpair = pathSwes[swId]
+            response = requests.get('http://localhost:8181/onos/v1/devices/{}/ports'.format(swId), auth=('onos','rocks'))
+            resjson = response.json()
+            
+            for portStat in resjson['ports']:
+                if portStat['port'] == portpair[0] or portStat['port'] == portpair[1]:
+                    if not portStat['isEnabled']:    # if port not enabled, meaning the path is no longer valid
+                        pathValid = False
+                        print('path error: {}/{} is disabled'.format(swId, portStat['port']))
+                        break
+                    else:
+                        print('port ok: {}/{}'.format(swId, portStat['port']))
+            if not pathValid: 
+                break
+        # Recompute path and set flow rules
+        if not pathValid:
+            pathSwes = setFlowRules(hostlocs, ruleSwes, ruleJson)
+            if pathSwes is None:    # no path found
+                print('continuing without a valid path')
+                pathSwes = dict()
+            else:
+                print("new path: {}".format(pathSwes))
+        else:
+            print('path is still valid:)')
+
+
+# def getresponse():
+#     # response = requests.get('http://localhost:8181/onos/v1/links?device=of:0000000000000001&port=1&direction=ALL', auth=('onos','rocks'))
+#     # print(response.text)
+#     # response = requests.delete('http://localhost:8181/onos/v1/flows/of:0000000000000001/54324673484056965', auth=('onos','rocks'))
+#     # print(response.text)
+#     # response = requests.get('http://localhost:8181/onos/v1/devices/of:0000000000000006/ports', auth=('onos','rocks'))
+#     # print(response.text)
+#     response = requests.get('http://localhost:8181/onos/v1/paths/of:0000000000000003/of:0000000000000006', auth=('onos','rocks'))
+#     print(response.text)
+
+
+if __name__ == '__main__':
+    main()
+    # getresponse()
+    

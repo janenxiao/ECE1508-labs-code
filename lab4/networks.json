@@ -1,0 +1,183 @@
+{
+    "networks": [
+        {
+            "admin_state_up": true,
+            "availability_zone_hints": [],
+            "availability_zones": [
+                "nova"
+            ],
+            "created_at": "2018-02-26T04:55:12Z",
+            "description": "",
+            "id": "7697d4c6-5b4c-4ea9-a1d6-af7d7f716f2b",
+            "ipv4_address_scope": null,
+            "ipv6_address_scope": null,
+            "is_default": true,
+            "mtu": 1500,
+            "name": "public",
+            "port_security_enabled": true,
+            "project_id": "187d635aec4c43fe8e8918afb3a5c82e",
+            "provider:network_type": "flat",
+            "provider:physical_network": "public",
+            "provider:segmentation_id": null,
+            "revision_number": 7,
+            "router:external": true,
+            "shared": false,
+            "status": "ACTIVE",
+            "subnets": [
+                "18ca945c-8868-4549-b725-e11f04612663",
+                "56efe610-32af-4f03-a73d-14bcbf1c9ae1"
+            ],
+            "tags": [],
+            "tenant_id": "187d635aec4c43fe8e8918afb3a5c82e",
+            "updated_at": "2018-02-26T04:55:25Z"
+        },
+        {
+            "admin_state_up": true,
+            "availability_zone_hints": [],
+            "availability_zones": [
+                "nova"
+            ],
+            "created_at": "2018-02-26T04:55:03Z",
+            "description": "",
+            "id": "dab39b17-b6f1-4790-a72b-3b78020adbea",
+            "ipv4_address_scope": null,
+            "ipv6_address_scope": null,
+            "mtu": 1450,
+            "name": "private",
+            "port_security_enabled": true,
+            "project_id": "bebe01ba81b348c8a53828992bdab571",
+            "provider:network_type": "vxlan",
+            "provider:physical_network": null,
+            "provider:segmentation_id": 36,
+            "revision_number": 4,
+            "router:external": false,
+            "shared": false,
+            "status": "ACTIVE",
+            "subnets": [
+                "96a1836a-447a-4455-bb0a-3f7304f6007d",
+                "44e08943-3210-4bf3-8e54-c2bb04a807f6"
+            ],
+            "tags": [],
+            "tenant_id": "bebe01ba81b348c8a53828992bdab571",
+            "updated_at": "2018-02-26T04:55:06Z"
+        }
+    ],
+    "subnets": [
+        {
+            "allocation_pools": [
+                {
+                    "end": "172.24.4.254",
+                    "start": "172.24.4.2"
+                }
+            ],
+            "cidr": "172.24.4.0/24",
+            "created_at": "2018-02-26T04:55:16Z",
+            "description": "",
+            "dns_nameservers": [],
+            "enable_dhcp": false,
+            "gateway_ip": "172.24.4.1",
+            "host_routes": [],
+            "id": "18ca945c-8868-4549-b725-e11f04612663",
+            "ip_version": 4,
+            "ipv6_address_mode": null,
+            "ipv6_ra_mode": null,
+            "name": "public-subnet",
+            "network_id": "7697d4c6-5b4c-4ea9-a1d6-af7d7f716f2b",
+            "project_id": "187d635aec4c43fe8e8918afb3a5c82e",
+            "revision_number": 0,
+            "service_types": [],
+            "subnetpool_id": null,
+            "tags": [],
+            "tenant_id": "187d635aec4c43fe8e8918afb3a5c82e",
+            "updated_at": "2018-02-26T04:55:16Z"
+        },
+        {
+            "allocation_pools": [
+                {
+                    "end": "10.0.0.62",
+                    "start": "10.0.0.2"
+                }
+            ],
+            "cidr": "10.0.0.0/26",
+            "created_at": "2018-02-26T04:55:04Z",
+            "description": "",
+            "dns_nameservers": [],
+            "enable_dhcp": true,
+            "gateway_ip": "10.0.0.1",
+            "host_routes": [],
+            "id": "44e08943-3210-4bf3-8e54-c2bb04a807f6",
+            "ip_version": 4,
+            "ipv6_address_mode": null,
+            "ipv6_ra_mode": null,
+            "name": "private-subnet",
+            "network_id": "dab39b17-b6f1-4790-a72b-3b78020adbea",
+            "project_id": "bebe01ba81b348c8a53828992bdab571",
+            "revision_number": 0,
+            "service_types": [],
+            "subnetpool_id": "3d3ece62-a79d-40ef-a7be-a54167c07f23",
+            "tags": [],
+            "tenant_id": "bebe01ba81b348c8a53828992bdab571",
+            "updated_at": "2018-02-26T04:55:04Z"
+        },
+        {
+            "allocation_pools": [
+                {
+                    "end": "2001:db8::ffff:ffff:ffff:ffff",
+                    "start": "2001:db8::3"
+                },
+                {
+                    "end": "2001:db8::1",
+                    "start": "2001:db8::1"
+                }
+            ],
+            "cidr": "2001:db8::/64",
+            "created_at": "2018-02-26T04:55:25Z",
+            "description": "",
+            "dns_nameservers": [],
+            "enable_dhcp": false,
+            "gateway_ip": "2001:db8::2",
+            "host_routes": [],
+            "id": "56efe610-32af-4f03-a73d-14bcbf1c9ae1",
+            "ip_version": 6,
+            "ipv6_address_mode": null,
+            "ipv6_ra_mode": null,
+            "name": "ipv6-public-subnet",
+            "network_id": "7697d4c6-5b4c-4ea9-a1d6-af7d7f716f2b",
+            "project_id": "187d635aec4c43fe8e8918afb3a5c82e",
+            "revision_number": 0,
+            "service_types": [],
+            "subnetpool_id": null,
+            "tags": [],
+            "tenant_id": "187d635aec4c43fe8e8918afb3a5c82e",
+            "updated_at": "2018-02-26T04:55:25Z"
+        },
+        {
+            "allocation_pools": [
+                {
+                    "end": "fd51:cff1:9c9:0:ffff:ffff:ffff:ffff",
+                    "start": "fd51:cff1:9c9::2"
+                }
+            ],
+            "cidr": "fd51:cff1:9c9::/64",
+            "created_at": "2018-02-26T04:55:06Z",
+            "description": "",
+            "dns_nameservers": [],
+            "enable_dhcp": true,
+            "gateway_ip": "fd51:cff1:9c9::1",
+            "host_routes": [],
+            "id": "96a1836a-447a-4455-bb0a-3f7304f6007d",
+            "ip_version": 6,
+            "ipv6_address_mode": "slaac",
+            "ipv6_ra_mode": "slaac",
+            "name": "ipv6-private-subnet",
+            "network_id": "dab39b17-b6f1-4790-a72b-3b78020adbea",
+            "project_id": "bebe01ba81b348c8a53828992bdab571",
+            "revision_number": 0,
+            "service_types": [],
+            "subnetpool_id": "7be6d6a4-e75a-4f62-ab68-2758c4484dc6",
+            "tags": [],
+            "tenant_id": "bebe01ba81b348c8a53828992bdab571",
+            "updated_at": "2018-02-26T04:55:06Z"
+        }
+    ]
+}

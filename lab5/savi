@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# SAVI Testbed login script
+#
+# 1. user name
+# 2. tenant name
+# 3. region name
+unset ERR
+if [[ -n "$1" ]]; then
+    USER_NAME=$1
+else
+    ERR=1
+fi
+
+if [[ -n "$2" ]]; then
+    PROJECT_NAME=$2
+else
+    ERR=1
+fi
+
+if [[ -n "$3" ]]; then
+   REGION_NAME=$3
+else
+    ERR=1
+fi
+
+new_iam=['EDGE-WT-1','EDGE-VC-1','EDGE-CG-1','EDGE-CT-1','EDGE-HW-2','CORE-2','EDGE-TR-1','CORE']
+# EDGE-HW-1 was disconnected
+# old_iam=['CORE']
+
+if [[ -z "$ERR" ]]; then
+    read -s -p "Password: " savipw
+    echo ""
+
+    unset OS_IMAGE_API_VERSION
+
+    # common variables
+    export OS_TENANT_NAME=$PROJECT_NAME
+    export OS_USERNAME=$USER_NAME
+    export OS_REGION_NAME=$REGION_NAME
+    export OS_PASSWORD=$savipw
+    export OS_NO_CACHE=${OS_NO_CACHE:-1}
+    export NOVA_VERSION=${NOVA_VERSION:-1.1}
+    export COMPUTE_API_VERSION=${COMPUTE_API_VERSION:-$NOVA_VERSION}
+
+    #if [[ " ${old_iam[*]} " =~ ${REGION_NAME} ]]; then
+    #    KEYSTONE_SERVICE_HOST=iam.savitestbed.ca
+    #    export OS_IMAGE_API_VERSION=${OS_IMAGE_API_VERSION:-1}
+    #    export OS_AUTH_URL=http://$KEYSTONE_SERVICE_HOST:5000/v2.0/
+    #    unalias openstack 2> /dev/null
+    #    out=`keystone token-get | grep user_id | awk '{print $2}'`
+
+    if [[ " ${new_iam[*]} " =~ ${REGION_NAME} ]]; then
+        KEYSTONE_SERVICE_HOST=iamv3.savitestbed.ca
+        alias openstack='openstack --os-auth-url http://iamv3.savitestbed.ca:5000/v3/ --os-identity-api-version=3'
+        export OS_AUTH_URL=http://$KEYSTONE_SERVICE_HOST:5000/v2.0/
+        out=`openstack token issue | grep user_id | awk '{print $2}'`
+    else
+        echo "The region is not detected."
+        ERR="NOREGION"
+    fi
+
+    if [[ "$out" != "user_id" ]]; then
+        echo "Bad credentials"
+    elif [[ "$ERR" != "NOREGION" ]]; then
+        echo "[$OS_USERNAME] is ready for [$OS_TENANT_NAME] on [$OS_REGION_NAME]."
+    fi
+ 
+else
+    echo "Usage: source savi <user> <project> <region>"
+fi
+
+
+
+   
+
+
+
+
+

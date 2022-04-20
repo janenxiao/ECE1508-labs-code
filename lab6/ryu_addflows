@@ -1,0 +1,91 @@
+#!/usr/bin/python
+
+import ryu_ofctl as ryu
+
+overlayMAC = {
+    "h1": "76:30:96:25:54:66",
+    "h2": "4a:b4:c3:ce:ed:e0",
+    "h3": "8a:02:b6:7f:ee:e5"
+}
+dpid = {
+    "s1": "000062e991480944",
+    "s2": "0000fe2643131445",
+    "s3": "00001a2bf4588e4e"
+}
+s1ports = (None, 1, 3, 2)    # s1ports[1] is the port number going to h1, s1ports[2] is the port number going to s2, s1ports[3] is the port number going to s3
+s2ports = (None, 1, 2, None)
+s3ports = (None, 1, None, 2)
+
+# only need to install flows on s1 and s3
+swflows = {
+    "s1": dict(),
+    "s3": dict()
+}
+
+# ryu.deleteAllFlows(dpid['s1'])
+# ryu.deleteAllFlows(dpid['s3'])
+# ryu.deleteAllFlows(dpid['s2'])
+
+# At s1, direct HTTP traffic (src: h1, dst: h2, received from h1) to out_port for h3
+# s1: h1 -> h3
+flow = ryu.FlowEntry()
+flow.in_port = s1ports[1]   # in_port is from h1
+flow.dl_src = overlayMAC['h1']  # src mac is h1 overlay interface
+flow.dl_dst = overlayMAC['h2']  # dst mac is h2 overlay interface
+flow.dl_type = 0x0800       # ipv4
+flow.nw_proto = 6           # tcp
+flow.tp_dst = 80            # HTTP, tcp port 80
+flow.priority = 50000
+action = ryu.OutputAction(s1ports[3])   # out_port is to h3
+flow.addAction(action)
+swflows['s1']['h1-h3'] = flow
+
+# At s1, direct HTTP traffic (src: h1, dst: h2, received from h3) to out_port for h2
+# s1: h3 -> h2
+flow = ryu.FlowEntry()
+flow.in_port = s1ports[3]   # in_port is from h3
+flow.dl_src = overlayMAC['h1']  # src mac is h1 overlay interface
+flow.dl_dst = overlayMAC['h2']  # dst mac is h2 overlay interface
+flow.dl_type = 0x0800       # ipv4
+flow.nw_proto = 6           # tcp
+flow.tp_dst = 80            # HTTP, tcp port 80
+flow.priority = 50000
+action = ryu.OutputAction(s1ports[2])   # out_port is to h2
+flow.addAction(action)
+swflows['s1']['h3-h2'] = flow
+
+# At s3, direct HTTP traffic (src: h1, dst: h2, received from h1) to out_port for h3
+# s3: h1 -> h3
+flow = ryu.FlowEntry()
+flow.in_port = s3ports[1]   # in_port is from h1
+flow.dl_src = overlayMAC['h1']  # src mac is h1 overlay interface
+flow.dl_dst = overlayMAC['h2']  # dst mac is h2 overlay interface
+flow.dl_type = 0x0800       # ipv4
+flow.nw_proto = 6           # tcp
+flow.tp_dst = 80            # HTTP, tcp port 80
+flow.priority = 50000
+action = ryu.OutputAction(s3ports[3])   # out_port is to h3
+flow.addAction(action)
+swflows['s3']['h1-h3'] = flow
+
+# At s3, direct HTTP traffic (src: h1, dst: h2, received from h3) to out_port for s1
+# s3: h3 -> h2
+flow = ryu.FlowEntry()
+flow.in_port = s3ports[3]   # in_port is from h3
+flow.dl_src = overlayMAC['h1']  # src mac is h1 overlay interface
+flow.dl_dst = overlayMAC['h2']  # dst mac is h2 overlay interface
+flow.dl_type = 0x0800       # ipv4
+flow.nw_proto = 6           # tcp
+flow.tp_dst = 80            # HTTP, tcp port 80
+flow.priority = 50000
+action = ryu.OutputAction(s3ports[1])   # out_port is to s1
+flow.addAction(action)
+swflows['s3']['h3-h2'] = flow
+
+# print(swflows)
+
+for sw in swflows:
+    for flowname, flow in swflows[sw].iteritems():
+        print('Inserting flow {}'.format(flowname))
+        ryu.insertFlow(dpid[sw], flow)
+

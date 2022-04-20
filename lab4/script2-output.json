@@ -1,0 +1,67 @@
+{
+    "networks": [
+        {
+            "id": "3c634e72-8056-4f7c-ac73-ec0848fa534f",
+            "name": "RED",
+            "status": "ACTIVE"
+        },
+        {
+            "id": "7697d4c6-5b4c-4ea9-a1d6-af7d7f716f2b",
+            "name": "public",
+            "status": "ACTIVE"
+        },
+        {
+            "id": "c4b2d4c7-720f-406a-82d8-07aad7425dd8",
+            "name": "BLUE",
+            "status": "ACTIVE"
+        },
+        {
+            "id": "dab39b17-b6f1-4790-a72b-3b78020adbea",
+            "name": "private",
+            "status": "ACTIVE"
+        }
+    ],
+    "routers": [
+        {
+            "id": "9c14d232-eed5-4aef-a711-fcfa466d7e29",
+            "name": "MyGateway",
+            "ports": [
+                {
+                    "device_id": "9c14d232-eed5-4aef-a711-fcfa466d7e29",
+                    "id": "09fab1a1-8b96-4673-bbb2-888c97713986",
+                    "network_id": "c4b2d4c7-720f-406a-82d8-07aad7425dd8",
+                    "status": "ACTIVE"
+                },
+                {
+                    "device_id": "9c14d232-eed5-4aef-a711-fcfa466d7e29",
+                    "id": "b9af1dc7-e75d-479e-9818-62757d1420c4",
+                    "network_id": "7697d4c6-5b4c-4ea9-a1d6-af7d7f716f2b",
+                    "status": "ACTIVE"
+                },
+                {
+                    "device_id": "9c14d232-eed5-4aef-a711-fcfa466d7e29",
+                    "id": "d486ca93-2f4b-4e84-9771-06f558ea5490",
+                    "network_id": "3c634e72-8056-4f7c-ac73-ec0848fa534f",
+                    "status": "ACTIVE"
+                }
+            ]
+        }
+    ],
+    "servers": [
+        {
+            "id": "49d77196-9c7d-4d7b-9535-c4cc041c1497",
+            "name": "Public-server",
+            "status": "ACTIVE"
+        },
+        {
+            "id": "9bfed727-c1f8-491e-b3cf-7548e2d99bdd",
+            "name": "Blue-server",
+            "status": "ACTIVE"
+        },
+        {
+            "id": "51f789a2-2de9-4927-a20b-eee01835a657",
+            "name": "Red-server",
+            "status": "ACTIVE"
+        }
+    ]
+}

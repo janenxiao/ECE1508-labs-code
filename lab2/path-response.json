@@ -1,0 +1,33 @@
+{
+   "paths":[
+      {
+         "cost":2.0,
+         "links":[
+            {
+               "dst":{
+                  "port":"2",
+                  "device":"of:0000000000000002"
+               },
+               "state":"ACTIVE",
+               "src":{
+                  "port":"1",
+                  "device":"of:0000000000000003"
+               },
+               "type":"DIRECT"
+            },
+            {
+               "dst":{
+                  "port":"1",
+                  "device":"of:0000000000000001"
+               },
+               "state":"ACTIVE",
+               "src":{
+                  "port":"1",
+                  "device":"of:0000000000000002"
+               },
+               "type":"DIRECT"
+            }
+         ]
+      }
+   ]
+}

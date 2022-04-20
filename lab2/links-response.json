@@ -1,0 +1,58 @@
+GET /links
+{
+   "links": [
+      {
+         "type": "DIRECT",
+         "src": {
+            "port": "1",
+            "device": "of:0000000000000002"
+         },
+         "state": "ACTIVE",
+         "dst": {
+            "port": "1",
+            "device": "of:0000000000000001"
+         }
+      },
+      {
+         "type": "DIRECT",
+         "src": {
+            "port": "1",
+            "device": "of:0000000000000003"
+         },
+         "state": "ACTIVE",
+         "dst": {
+            "port": "1",
+            "device": "of:0000000000000001"
+         }
+      }
+   ]
+}
+GET /links?<device=deviceId>&<port=portNumber>&<direction=(ALL,INGRESS,EGRESS)>
+{
+   "links": [
+      {
+         "src": {
+            "port": "1",
+            "device": "of:0000000000000003"
+         },
+         "dst": {
+            "port": "1",
+            "device": "of:0000000000000001"
+         },
+         "type": "DIRECT",
+         "state": "ACTIVE"
+      },
+      {
+         "src": {
+            "port": "1",
+            "device": "of:0000000000000002"
+         },
+         "dst": {
+            "port": "1",
+            "device": "of:0000000000000001"
+         },
+         "type": "DIRECT",
+         "state": "ACTIVE"
+      }
+   ]
+}
